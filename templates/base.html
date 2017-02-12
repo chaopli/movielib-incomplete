@@ -14,7 +14,65 @@
 
 		<!-- Loading main css file -->
 		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+<script
+  src="http://code.jquery.com/jquery-1.12.1.min.js"
+  integrity="sha256-I1nTg78tSrZev3kjvfdM5A5Ak/blglGzlaZANLPDl3I="
+  crossorigin="anonymous"></script>
+<script
+  src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
+		<script>
+        $(document).ready(function(){
+            $("#search").autocomplete({source:[]});
+        });
+        var state = {
+        };
+        {% if page %}
+        state["page"] = {{page}};
+        {% endif %}
+        {% if sort %}
+        state["sort"] = "{{sort}}";
+        {% endif %}
+        {% if search %}
+        state["search"] = "{{search}}";
+        {% endif %}
+        console.log("{{page}}");
+        console.log("{{sort}}");
+        console.log("{{search}}");
+        console.log("{{pageinfos}}");
+        console.log(state)
+		function reload_url(kwarg) {
+            var kw = kwarg.split("=");
+            var key = kw[0];
+            var value = kw[1];
+            // state[key] = value;
+            var url = "/movies?"
+            // for (var k in state) {
+            //     url = url + k + "=" + state[k] + "&";
+            // }
+						url = url+key+"="+value;
+            // url = url.slice(0, -1);
+            console.log(url);
+            window.location = url;
+		}
+		function get_suggestion(input) {
+		    if (input.value == "") {
+		        return;
+		    }
+		    var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    update_suggestion(xmlHttp.responseText);
+            }
+            xmlHttp.open("GET", "/suggest/"+input.value, true); // true for asynchronous
+            xmlHttp.send(null);
+		}
+		function update_suggestion(response) {
+		    $("#search").autocomplete("option", {source: JSON.parse(response).result});
+		    console.log(JSON.parse(response).result);
+		}
+	</script>
 		<!--[if lt IE 9]>
 		<script src="js/ie-support/html5.js"></script>
 		<script src="js/ie-support/respond.js"></script>
@@ -40,13 +98,13 @@
 						<ul class="menu">
 							<li class="menu-item"><a href="index.html">Home</a></li>
 							<li class="menu-item"><a href="about.html">About</a></li>
-							<li class="menu-item current-menu-item"><a href="review.html">Movie reviews</a></li>
+							<li class="menu-item current-menu-item"><a href="/">Movie reviews</a></li>
 							<li class="menu-item"><a href="joinus.html">Join us</a></li>
 							<li class="menu-item"><a href="contact.html">Contact</a></li>
 						</ul> <!-- .menu -->
 
-						<form action="#" class="search-form">
-							<input type="text" placeholder="Search...">
+						<form action="/movies" class="search-form" method="GET">
+							<input id="search" name="search" onkeydown="get_suggestion(this)" type="text" placeholder="Search..." class="active">
 							<button><i class="fa fa-search"></i></button>
 					</form>n><i class="fa fa-search"></i></button>
 				</form>
@@ -130,10 +188,8 @@
 
 
 
-<script src="{{url_for('static', filename='js/jquery-1.11.1.min.js')}}"></script>
 <script src="{{url_for('static', filename='js/plugins.js')}}"></script>
 <script src="{{url_for('static', filename='js/app.js')}}"></script>
-
 	</body>
 
 </html>
